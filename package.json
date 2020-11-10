@@ -1,0 +1,35 @@
+{
+  "name": "bedav-bot",
+  "version": "1.0.0",
+  "description": "A bot to search for and the get the availability of beds reserved for covid patients in hospitals.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shreyas44/bedav-bot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/shreyas44/bedav-bot/issues"
+  },
+  "homepage": "https://github.com/shreyas44/bedav-bot#readme",
+  "dependencies": {
+    "@types/express": "^4.17.8",
+    "@types/node": "^14.14.7",
+    "body-parser": "^1.19.0",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "js-sha256": "^0.9.0",
+    "jsonwebtoken": "^8.5.1",
+    "nexmo": "^2.7.0-beta-1",
+    "ts-node": "^9.0.0",
+    "typescript": "^4.0.5"
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^8.5.0"
+  }
+}
