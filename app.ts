@@ -87,6 +87,7 @@ const getGraphQlQuery = (city: string, query: string): string => {
               generalAvailable
               ventilatorsAvailable
               icuTotal
+              icuOccupied
               hduOccupied
               oxygenOccupied
               generalOccupied
