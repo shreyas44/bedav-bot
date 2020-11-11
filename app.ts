@@ -141,16 +141,63 @@ const getHospitals = async (
 }
 
 const getFormattedHospital = (hospital: Hospital, index: number): string => {
-  const formattedString = `
-    *${index}. ${hospital.name}*
-    _ICU Available_: ${hospital.icuAvailable}
-    _HDU Available_: ${hospital.hduAvailable}
-    _General Available_: ${hospital.generalAvailable}
-    _Oxygen Available_: ${hospital.oxygenAvailable}
-    _Ventilators Available_: ${hospital.ventilatorsAvailable}
-    _Phone_: ${hospital.phone}
-    _Website_: ${hospital.website}
-  `
+  const roundedString = (occupied: number, total: number) => {
+    console.log(occupied, total)
+    return `${Math.floor((occupied * 100) / total)}% Occupied`
+  }
+
+  let formattedString = `*${index}. ${hospital.name}*\n`
+
+  if (hospital.icuAvailable !== null && hospital.icuTotal !== 0) {
+    formattedString += `    _ICU Available_: ${
+      hospital.icuAvailable
+    } (${roundedString(hospital.icuOccupied!, hospital.icuTotal!)})\n`
+  }
+
+  if (hospital.hduAvailable !== null && hospital.hduTotal !== 0) {
+    formattedString += `    _HDU Available_: ${
+      hospital.hduAvailable
+    } (${roundedString(hospital.hduOccupied!, hospital.hduTotal!)})\n`
+  }
+
+  if (hospital.oxygenAvailable !== null && hospital.oxygenTotal !== 0) {
+    formattedString += `    _Oxygen Available_: ${
+      hospital.oxygenAvailable
+    } (${roundedString(hospital.oxygenOccupied!, hospital.oxygenTotal!)})\n`
+  }
+
+  if (hospital.generalAvailable !== null && hospital.generalTotal !== 0) {
+    formattedString += `    _General Available_: ${
+      hospital.generalAvailable
+    } (${roundedString(hospital.generalOccupied!, hospital.generalTotal!)})\n`
+  }
+
+  if (
+    hospital.ventilatorsAvailable !== null &&
+    hospital.ventilatorsTotal === 0
+  ) {
+    formattedString += `    _Ventilators Available_: ${
+      hospital.ventilatorsAvailable
+    } (${roundedString(
+      hospital.ventilatorsOccupied!,
+      hospital.ventilatorsTotal!
+    )})\n`
+  }
+
+  if (hospital.phone !== null) {
+    formattedString += `    _Phone_: ${hospital.phone}\n`
+  }
+
+  if (hospital.website !== null) {
+    formattedString += `    _Website_: ${hospital.website}\n`
+  }
+  //   _HDU Available_: ${hospital.hduAvailable}
+  //   _General Available_: ${hospital.generalAvailable}
+  //   _Oxygen Available_: ${hospital.oxygenAvailable}
+  //   _Ventilators Available_: ${hospital.ventilatorsAvailable}
+  //   _Phone_: ${hospital.phone}
+  //   _Website_: ${hospital.website}
+  // `
 
   return formattedString
 }
@@ -160,8 +207,8 @@ const getFormattedHospitals = (hospitals: Hospital[]): string => {
     return getFormattedHospital(hospital, index + 1)
   })
 
-  const message = formattedHospitals.reduce((final = "", hospital) => {
-    final += hospital
+  const message = formattedHospitals.reduce((final, hospital) => {
+    final += "\n" + hospital
 
     return final
   })
