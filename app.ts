@@ -1,9 +1,11 @@
-import express, { application, query, RequestHandler } from "express"
+import express, { RequestHandler } from "express"
+import { encode, decode } from "js-base64"
 import bodyParser from "body-parser"
 import axios from "axios"
 require("dotenv").config()
 
 interface Hospital {
+  id: string
   name: string
   icuAvailable?: number
   hduAvailable?: number
@@ -80,6 +82,7 @@ const getGraphQlQuery = (city: string, query: string): string => {
         hospitals(first: 10, searchQuery: "${query}") {
           edges {
             node {
+              id
               name
               icuAvailable
               hduAvailable                
@@ -146,7 +149,9 @@ const getFormattedHospital = (hospital: Hospital, index: number): string => {
     return `${Math.floor((occupied * 100) / total)}% Occupied`
   }
 
-  let formattedString = `*${index}. ${hospital.name}*\n`
+  let formattedString = `*${index}. ${hospital.name}* (ID: ${decode(
+    hospital.id
+  ).slice(9)})\n`
 
   if (hospital.icuAvailable !== null && hospital.icuTotal !== 0) {
     formattedString += `    _ICU Available_: ${
@@ -191,13 +196,6 @@ const getFormattedHospital = (hospital: Hospital, index: number): string => {
   if (hospital.website !== null) {
     formattedString += `    _Website_: ${hospital.website}\n`
   }
-  //   _HDU Available_: ${hospital.hduAvailable}
-  //   _General Available_: ${hospital.generalAvailable}
-  //   _Oxygen Available_: ${hospital.oxygenAvailable}
-  //   _Ventilators Available_: ${hospital.ventilatorsAvailable}
-  //   _Phone_: ${hospital.phone}
-  //   _Website_: ${hospital.website}
-  // `
 
   return formattedString
 }
