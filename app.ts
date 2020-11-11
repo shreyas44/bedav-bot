@@ -241,8 +241,15 @@ const handleInbound: RequestHandler = async (request, response) => {
       const { data, error } = await getHospitals(graphqlQuery)
 
       if (!error) {
-        const formatedHospitals = getFormattedHospitals(data)
-        sendWhatsappMsg(number, formatedHospitals)
+        if (data?.length === 0) {
+          sendWhatsappMsg(
+            number,
+            "Sorry, there were no hospitals that matched your search 🙁"
+          )
+        } else {
+          const formatedHospitals = getFormattedHospitals(data)
+          sendWhatsappMsg(number, formatedHospitals)
+        }
       }
     } else {
     }
