@@ -1,10 +1,41 @@
 import axios from "axios"
+import { query } from "express"
 import { decode } from "js-base64"
 import { Hospital } from "./types"
 
+const hospitalFields = `
+  id
+  name
+  icuAvailable
+  hduAvailable                
+  oxygenAvailable
+  generalAvailable
+  ventilatorsAvailable
+
+  icuOccupied
+  hduOccupied
+  oxygenOccupied
+  generalOccupied
+  ventilatorsOccupied
+  
+  icuTotal
+  hduTotal
+  oxygenTotal
+  generalTotal
+  ventilatorsTotal
+  address
+  latitude
+  longitude
+  phone
+  website
+  city
+  state
+`
+
 export const sendWhatsappMsg = async (
   number: number,
-  message: string
+  message: any,
+  type: string = "text"
 ): Promise<void> => {
   await axios.post(
     "https://messages-sandbox.nexmo.com/v0.1/messages",
@@ -19,8 +50,8 @@ export const sendWhatsappMsg = async (
       },
       message: {
         content: {
-          type: "text",
-          text: message,
+          type: type,
+          [type]: message,
         },
       },
     },
@@ -33,39 +64,14 @@ export const sendWhatsappMsg = async (
   )
 }
 
-export const getGraphQlQuery = (city: string, query: string): string => {
+export const getSearchGraphQlQuery = (city: string, query: string): string => {
   const graphqlQuery = `
     query {
       locality(name: "${city}") {
         hospitals(first: 10, searchQuery: "${query}") {
           edges {
             node {
-              id
-              name
-              icuAvailable
-              hduAvailable                
-              oxygenAvailable
-              generalAvailable
-              ventilatorsAvailable
-
-              icuOccupied
-              hduOccupied
-              oxygenOccupied
-              generalOccupied
-              ventilatorsOccupied
-              
-              icuTotal
-              hduTotal
-              oxygenTotal
-              generalTotal
-              ventilatorsTotal
-              address
-              latitude
-              longitude
-              phone
-              website
-              city
-              state
+              ${hospitalFields} 
             }
           }
         }
@@ -76,10 +82,20 @@ export const getGraphQlQuery = (city: string, query: string): string => {
   return graphqlQuery
 }
 
-export const getHospitals = async (
+export const getHospitalGraphQLQuery = (id: string): string => {
+  return `
+    query {
+      hospital(id: "${id}") {
+        ${hospitalFields}
+      }
+    }
+  `
+}
+
+export const runQuery = async (
   query: string,
   variables: object = {}
-): Promise<{ data: Hospital[] | null; error: any }> => {
+): Promise<{ data: any; error: any }> => {
   const ret = {
     data: null,
     error: null,
@@ -90,11 +106,8 @@ export const getHospitals = async (
       query,
       variables,
     })
-    const { data } = response.data
-    const { edges } = data.locality.hospitals
-    const hospitals = edges.map((item: { node: any }) => item.node)
 
-    ret.data = hospitals
+    ret.data = response.data.data
   } catch (error) {
     ret.error = error
   }
@@ -102,12 +115,31 @@ export const getHospitals = async (
   return ret
 }
 
+export const getHospitals = async (
+  query: string,
+  variables: object = {}
+): Promise<{ data: Hospital[] | null; error: any }> => {
+  let { data, error } = await runQuery(query, variables)
+
+  if (error !== null) {
+    return { data, error }
+  }
+
+  try {
+    const { edges } = data.locality.hospitals
+    data = edges.map((item: { node: any }) => item.node)
+  } catch (err) {
+    error = err
+  }
+
+  return { data, error }
+}
+
 export const getFormattedHospital = (
   hospital: Hospital,
   index: number
 ): string => {
   const roundedString = (occupied: number, total: number) => {
-    console.log(occupied, total)
     return `${Math.floor((occupied * 100) / total)}% Occupied`
   }
 
@@ -174,4 +206,8 @@ export const getFormattedHospitals = (hospitals: Hospital[]): string => {
   })
 
   return message
+}
+
+export const getHelpMessage = () => {
+  return
 }

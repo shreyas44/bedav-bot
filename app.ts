@@ -1,11 +1,14 @@
 import express, { RequestHandler } from "express"
 import bodyParser from "body-parser"
 import {
-  getGraphQlQuery,
+  getSearchGraphQlQuery,
   getHospitals,
   sendWhatsappMsg,
   getFormattedHospitals,
+  getHospitalGraphQLQuery,
+  runQuery,
 } from "./utils"
+import { encode } from "js-base64"
 require("dotenv").config()
 
 const cityKey: {
@@ -28,7 +31,7 @@ app.use(
 const handleInbound: RequestHandler = async (request, response) => {
   const number = request.body.from.number
   const content = request.body.message.content
-  const text: string = content.text.toLowerCase().trim()
+  const text = content.text.toLowerCase().trim()
 
   if (text.startsWith("search for")) {
     let remaining = text.split("search for")[1].trim()
@@ -37,7 +40,7 @@ const handleInbound: RequestHandler = async (request, response) => {
       const split = remaining.split("in")
       const city = split[split.length - 1].trim()
       const searchQuery = split.slice(0, split.length - 1).join("in")
-      const graphqlQuery = getGraphQlQuery(cityKey[city], searchQuery)
+      const graphqlQuery = getSearchGraphQlQuery(cityKey[city], searchQuery)
       const { data, error } = await getHospitals(graphqlQuery)
 
       if (!error) {
@@ -47,11 +50,43 @@ const handleInbound: RequestHandler = async (request, response) => {
             "Sorry, there were no hospitals that matched your search 🙁"
           )
         } else {
-          const formatedHospitals = getFormattedHospitals(data)
+          const formatedHospitals = getFormattedHospitals(data!)
           sendWhatsappMsg(number, formatedHospitals)
         }
       }
+    }
+  } else if (text.startsWith("get directions to")) {
+    let remaining = text.split("get directions to")[1].trim()
+    let hospitalId: number | string
+
+    try {
+      hospitalId = parseInt(remaining)
+    } catch (error) {
+      sendWhatsappMsg(number, "Please enter a valid Hospital ID")
+    }
+
+    hospitalId = encode(`Hospital:${hospitalId!}`)
+
+    const graphqlQuery = getHospitalGraphQLQuery(hospitalId)
+    const { data, error } = await runQuery(graphqlQuery)
+
+    if (!error) {
+      const { hospital } = data
+      sendWhatsappMsg(
+        number,
+        {
+          type: "location",
+          location: {
+            longitude: hospital.longitude,
+            latitude: hospital.latitude,
+            name: hospital.name,
+            address: hospital.address,
+          },
+        },
+        "custom"
+      )
     } else {
+      sendWhatsappMsg(number, "Please enter a valid Hospital ID")
     }
   }
 
