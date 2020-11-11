@@ -1,8 +1,38 @@
 import express, { application, query, RequestHandler } from "express"
 import bodyParser from "body-parser"
 import axios from "axios"
-import { isPropertyAccessChain } from "typescript"
 require("dotenv").config()
+
+interface Hospital {
+  name: string
+  icuAvailable?: number
+  hduAvailable?: number
+  oxygenAvailable?: number
+  ventilatorsAvailable?: number
+  generalAvailable?: number
+
+  icuTotal?: number
+  hduTotal?: number
+  oxygenTotal?: number
+  ventilatorsTotal?: number
+  generalTotal?: number
+
+  icuOccupied?: number
+  hduOccupied?: number
+  oxygenOccupied?: number
+  ventilatorsOccupied?: number
+  generalOccupied?: number
+
+  address?: string
+  latitude?: number
+  longitutde?: number
+
+  phone?: string
+  website?: string
+
+  city: string
+  state: string
+}
 
 const cityKey: {
   [prop: string]: string
@@ -52,9 +82,27 @@ const getGraphQlQuery = (city: string, query: string): string => {
             node {
               name
               icuAvailable
+              hduAvailable                
+              oxygenAvailable
               generalAvailable
+              ventilatorsAvailable
+              icuTotal
+              hduOccupied
+              oxygenOccupied
+              generalOccupied
+              ventilatorsOccupied
+              icuTotal
+              hduTotal
+              oxygenTotal
+              generalTotal
+              ventilatorsTotal
+              address
               latitude
               longitude
+              phone
+              website
+              city
+              state
             }
           }
         }
@@ -68,7 +116,7 @@ const getGraphQlQuery = (city: string, query: string): string => {
 const getHospitals = async (
   query: string,
   variables: object = {}
-): Promise<{ data: object | null; error: any }> => {
+): Promise<{ data: Hospital[] | null; error: any }> => {
   const ret = {
     data: null,
     error: null,
@@ -89,6 +137,35 @@ const getHospitals = async (
   }
 
   return ret
+}
+
+const getFormattedHospital = (hospital: Hospital, index: number): string => {
+  const formattedString = `
+    *${index}. ${hospital.name}*
+    _ICU Available_: ${hospital.icuAvailable}
+    _HDU Available_: ${hospital.hduAvailable}
+    _General Available_: ${hospital.generalAvailable}
+    _Oxygen Available_: ${hospital.oxygenAvailable}
+    _Ventilators Available_: ${hospital.ventilatorsAvailable}
+    _Phone_: ${hospital.phone}
+    _Website_: ${hospital.website}
+  `
+
+  return formattedString
+}
+
+const getFormattedHospitals = (hospitals: Hospital[]): string => {
+  const formattedHospitals = hospitals.map((hospital, index) => {
+    return getFormattedHospital(hospital, index + 1)
+  })
+
+  const message = formattedHospitals.reduce((final = "", hospital) => {
+    final += hospital
+
+    return final
+  })
+
+  return message
 }
 
 const app = express()
@@ -116,7 +193,8 @@ const handleInbound: RequestHandler = async (request, response) => {
       const { data, error } = await getHospitals(graphqlQuery)
 
       if (!error) {
-        sendWhatsappMsg(number, JSON.stringify(data))
+        const formatedHospitals = getFormattedHospitals(data)
+        sendWhatsappMsg(number, formatedHospitals)
       }
     } else {
     }
