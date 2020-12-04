@@ -1,7 +1,17 @@
 import axios from "axios"
-import { query } from "express"
 import { decode } from "js-base64"
 import { Hospital } from "./types"
+
+export const fixedMessages = {
+  intro: "",
+  help: `
+You can use the following commands:
+1. *help* - Get this menu and all the commands you can use
+2. *search* _<hospital-name>_ *in* _<location>_ - Search for a hospital in a particual location. For example, "search for sakra in bangalore" searches for hospitals with the name sakra in bangalore
+3. *get directions to* _<hospital-id>_ - Get directions to a hospital with a particular ID. You can get the hospital ID from the search results. The serial number preceding the Hospital name is the Hospital ID. For example if the search result has _(87) Sakra Hospital_, send _get directions to 87_ to get directions to Sakra Hospital.
+`,
+  faq: "",
+}
 
 const hospitalFields = `
   id
@@ -31,6 +41,10 @@ const hospitalFields = `
   city
   state
 `
+
+export const getHospitalId = (encodedId: string) => {
+  return decode(encodedId).slice(9)
+}
 
 export const sendWhatsappMsg = async (
   number: number,
@@ -137,15 +151,13 @@ export const getHospitals = async (
 
 export const getFormattedHospital = (
   hospital: Hospital,
-  index: number
+  index: number | string
 ): string => {
   const roundedString = (occupied: number, total: number) => {
     return `${Math.floor((occupied * 100) / total)}% Occupied`
   }
 
-  let formattedString = `*${index}. ${hospital.name}* (ID: ${decode(
-    hospital.id
-  ).slice(9)})\n`
+  let formattedString = `*(${index}) ${hospital.name}*\n`
 
   if (hospital.icuAvailable !== null && hospital.icuTotal !== 0) {
     formattedString += `    _ICU Available_: ${
@@ -196,7 +208,7 @@ export const getFormattedHospital = (
 
 export const getFormattedHospitals = (hospitals: Hospital[]): string => {
   const formattedHospitals = hospitals.map((hospital, index) => {
-    return getFormattedHospital(hospital, index + 1)
+    return getFormattedHospital(hospital, getHospitalId(hospital.id))
   })
 
   const message = formattedHospitals.reduce((final, hospital) => {
@@ -206,8 +218,4 @@ export const getFormattedHospitals = (hospitals: Hospital[]): string => {
   })
 
   return message
-}
-
-export const getHelpMessage = () => {
-  return
 }

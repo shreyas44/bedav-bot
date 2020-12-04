@@ -7,6 +7,7 @@ import {
   getFormattedHospitals,
   getHospitalGraphQLQuery,
   runQuery,
+  fixedMessages,
 } from "./utils"
 import { encode } from "js-base64"
 require("dotenv").config()
@@ -18,13 +19,6 @@ const cityKey: {
   bengaluru: "bengaluru-karnataka",
   pune: "pune-maharashtra",
 }
-
-const helpMessage = `
-You can use the following commands:
-1. *help* - Get this menu and all the commands you can use
-2. *search* _<hospital-name>_ *in* _<location>_ - Search for a hospital in a particual location. For example, "search for sakra in bangalore" searches for hospitals with the name sakra in bangalore
-3. *get directions to* _<hospital-id>_ - Get directions to a hospital with a particular ID. You can get the hospital ID from the search results. The serial number preceding the Hospital name is the Hospital ID. For example if the search result has _(87) Sakra Hospital_, send _get directions to 87_ to get directions to Sakra Hospital.
-`
 
 const app = express()
 
@@ -96,7 +90,7 @@ const handleInbound: RequestHandler = async (request, response) => {
       sendWhatsappMsg(number, "Please enter a valid Hospital ID")
     }
   } else if (text.startsWith("help") || text === "hi") {
-    sendWhatsappMsg(number, helpMessage)
+    sendWhatsappMsg(number, fixedMessages.help)
   }
 
   response.status(200).end()
