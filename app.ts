@@ -18,7 +18,28 @@ const cityKey: {
 } = {
   bangalore: "bengaluru-karnataka",
   bengaluru: "bengaluru-karnataka",
+
+  // MH
   pune: "pune-maharashtra",
+  kohlapur: "kohlapur-maharashtra",
+  sangli: "sangli-maharashtra",
+  satara: "satara-maharashtra",
+  solapur: "solapur-maharashtra",
+
+  // AP
+  anatapur: "anatapur-andhra pradesh",
+  chittoor: "chittoor-andhra pradesh",
+  "east godavari": "east godavari-andhra pradesh",
+  guntur: "guntur-andhra pradesh",
+  krishna: "krishna-andhra pradesh",
+  kurnool: "kurnool-andhra pradesh",
+  prakasam: "prakasam-andhra pradesh",
+  nellore: "spsr nellore-andhra pradesh",
+  srikakulam: "srikakulam-andhra pradesh",
+  vishakapatanam: "vishakapatanam-andhra pradesh",
+  vizianagaram: "vizianagaram-andhra pradesh",
+  "west godavari": "west godavari-andhra pradesh",
+  kadapa: "kadapa-andhra pradesh",
 }
 
 const handleSearch = async (message: string, to: ToInfo) => {
@@ -97,8 +118,10 @@ const handleInbound: RequestHandler = async (request, response) => {
     handleSearch(text, to)
   } else if (text.startsWith("get directions to")) {
     handleDirections(text, to)
-  } else if (text.startsWith("help") || text === "hi") {
+  } else if (["help", "hi"].includes(text)) {
     sendMessage(to, fixedMessages.help)
+  } else if (text === "cities") {
+    sendMessage(to, fixedMessages.cities)
   } else {
     sendMessage(
       to,
