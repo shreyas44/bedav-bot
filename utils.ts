@@ -3,12 +3,41 @@ import { decode } from "js-base64"
 import { Hospital, Platform, ToInfo } from "./types"
 
 export const fixedMessages = {
-  intro: "",
   help: `
+The Bedav bot is here to help you find a hospital with available beds
 You can use the following commands:
 1. *help* - Get this menu and all the commands you can use
+2. *cities* - Get a list of all the cities available
 2. *search* _<hospital-name>_ *in* _<location>_ - Search for a hospital in a particual location. For example, "search for sakra in bangalore" searches for hospitals with the name sakra in bangalore
 3. *get directions to* _<hospital-id>_ - Get directions to a hospital with a particular ID. You can get the hospital ID from the search results. The serial number preceding the Hospital name is the Hospital ID. For example if the search result has _(87) Sakra Hospital_, send _get directions to 87_ to get directions to Sakra Hospital.
+`,
+  cities: `
+The cities/districts currently available are:
+
+Karnataka
+1. Bangalore/Bengaluru
+
+Maharashtra
+2. Pune
+3. Kohlapur
+4. Sangli
+5. Satara
+6. Solapur
+
+Andhra Pradhesh
+7. Anantapur
+8. Chittoor
+9. East Godavari
+10. Guntur
+11. Krishna
+12. Kurnool
+13. Prakasam
+14. Nellore
+15. Srikakulam
+16. Vishakapatanam
+17. Vizianagaram
+18. West Godavari
+19. Kadapa
 `,
   faq: "",
 }
