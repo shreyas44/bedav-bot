@@ -14,30 +14,30 @@ You can use the following commands:
   cities: `
 The cities/districts currently available are:
 
-Karnataka
-1. Bangalore/Bengaluru
+*Karnataka*
+  1. Bangalore/Bengaluru
 
-Maharashtra
-2. Pune
-3. Kohlapur
-4. Sangli
-5. Satara
-6. Solapur
+*Maharashtra*
+  2. Pune
+  3. Kohlapur
+  4. Sangli
+  5. Satara
+  6. Solapur
 
-Andhra Pradhesh
-7. Anantapur
-8. Chittoor
-9. East Godavari
-10. Guntur
-11. Krishna
-12. Kurnool
-13. Prakasam
-14. Nellore
-15. Srikakulam
-16. Vishakapatanam
-17. Vizianagaram
-18. West Godavari
-19. Kadapa
+*Andhra Pradhesh*
+  7. Anantapur
+  8. Chittoor
+  9. East Godavari
+ 10. Guntur
+ 11. Krishna
+ 12. Kurnool
+ 13. Prakasam
+ 14. Nellore
+ 15. Srikakulam
+ 16. Vishakapatanam
+ 17. Vizianagaram
+ 18. West Godavari
+ 19. Kadapa
 `,
   faq: "",
 }
