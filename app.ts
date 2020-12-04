@@ -3,13 +3,14 @@ import bodyParser from "body-parser"
 import {
   getSearchGraphQlQuery,
   getHospitals,
-  sendWhatsappMsg,
+  sendMessage,
   getFormattedHospitals,
   getHospitalGraphQLQuery,
   runQuery,
   fixedMessages,
 } from "./utils"
 import { encode } from "js-base64"
+import { ToInfo } from "./types"
 require("dotenv").config()
 
 const cityKey: {
@@ -20,7 +21,7 @@ const cityKey: {
   pune: "pune-maharashtra",
 }
 
-const handleSearch = async (message: string, number: number) => {
+const handleSearch = async (message: string, to: ToInfo) => {
   let remaining = message.split("search")[1].trim()
 
   if (remaining.includes("in")) {
@@ -32,26 +33,26 @@ const handleSearch = async (message: string, number: number) => {
 
     if (!error) {
       if (data?.length === 0) {
-        sendWhatsappMsg(
-          number,
+        sendMessage(
+          to,
           "Sorry, there were no hospitals that matched your search 🙁"
         )
       } else {
         const formatedHospitals = getFormattedHospitals(data!)
-        sendWhatsappMsg(number, formatedHospitals)
+        sendMessage(to, formatedHospitals)
       }
     }
   }
 }
 
-const handleDirections = async (message: string, number: number) => {
+const handleDirections = async (message: string, to: ToInfo) => {
   let remaining = message.split("get directions to")[1].trim()
   let hospitalId: number | string
 
   try {
     hospitalId = parseInt(remaining)
   } catch (error) {
-    sendWhatsappMsg(number, "Please enter a valid Hospital ID")
+    sendMessage(to, "Please enter a valid Hospital ID")
   }
 
   hospitalId = encode(`Hospital:${hospitalId!}`)
@@ -61,35 +62,48 @@ const handleDirections = async (message: string, number: number) => {
 
   if (!error) {
     const { hospital } = data
-    sendWhatsappMsg(
-      number,
-      {
-        type: "location",
-        location: {
-          longitude: hospital.longitude,
-          latitude: hospital.latitude,
-          name: hospital.name,
-          address: hospital.address,
+
+    if (to.type === "whatsapp") {
+      sendMessage(
+        to,
+        {
+          type: "location",
+          location: {
+            longitude: hospital.longitude,
+            latitude: hospital.latitude,
+            name: hospital.name,
+            address: hospital.address,
+          },
         },
-      },
-      "custom"
-    )
+        "custom"
+      )
+    } else if (to.type === "messenger") {
+      sendMessage(
+        to,
+        `https://maps.google.com/maps?q=${hospital.latitude},${hospital.longitude}\n*${hospital.name}*\n${hospital.address}\n`
+      )
+    }
   } else {
-    sendWhatsappMsg(number, "Please enter a valid Hospital ID")
+    sendMessage(to, "Please enter a valid Hospital ID")
   }
 }
 
 const handleInbound: RequestHandler = async (request, response) => {
-  const number = request.body.from.number
   const content = request.body.message.content
   const text = content.text.toLowerCase().trim()
+  const to: ToInfo = request.body.from
 
   if (text.startsWith("search")) {
-    handleSearch(text, number)
+    handleSearch(text, to)
   } else if (text.startsWith("get directions to")) {
-    handleDirections(text, number)
+    handleDirections(text, to)
   } else if (text.startsWith("help") || text === "hi") {
-    sendWhatsappMsg(number, fixedMessages.help)
+    sendMessage(to, fixedMessages.help)
+  } else {
+    sendMessage(
+      to,
+      `Sorry, invalid message. Please try again\n${fixedMessages.help}`
+    )
   }
 
   response.status(200).end()

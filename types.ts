@@ -29,3 +29,11 @@ export interface Hospital {
   city: string
   state: string
 }
+
+export type Platform = "messenger" | "whatsapp"
+
+export interface ToInfo {
+  type: Platform
+  number?: string
+  id?: string
+}

@@ -1,6 +1,6 @@
 import axios from "axios"
 import { decode } from "js-base64"
-import { Hospital } from "./types"
+import { Hospital, Platform, ToInfo } from "./types"
 
 export const fixedMessages = {
   intro: "",
@@ -46,22 +46,26 @@ export const getHospitalId = (encodedId: string) => {
   return decode(encodedId).slice(9)
 }
 
-export const sendWhatsappMsg = async (
-  number: number,
+export const sendMessage = async (
+  to: ToInfo,
   message: any,
   type: string = "text"
 ): Promise<void> => {
+  let from: { type: Platform; number?: string; id?: string } = {
+    type: to.type,
+  }
+
+  if (to.type === "whatsapp") {
+    from.number = "14157386170"
+  } else if (to.type === "messenger") {
+    from.id = "107083064136738"
+  }
+
   await axios.post(
     "https://messages-sandbox.nexmo.com/v0.1/messages",
     {
-      from: {
-        type: "whatsapp",
-        number: "14157386170",
-      },
-      to: {
-        type: "whatsapp",
-        number: number,
-      },
+      from,
+      to,
       message: {
         content: {
           type: type,
