@@ -19,6 +19,13 @@ const cityKey: {
   pune: "pune-maharashtra",
 }
 
+const helpMessage = `
+You can use the following commands:
+1. *help* - Get this menu and all the commands you can use
+2. *search* _<hospital-name>_ *in* _<location>_ - Search for a hospital in a particual location. For example, "search for sakra in bangalore" searches for hospitals with the name sakra in bangalore
+3. *get directions to* _<hospital-id>_ - Get directions to a hospital with a particular ID. You can get the hospital ID from the search results. The serial number preceding the Hospital name is the Hospital ID. For example if the search result has _(87) Sakra Hospital_, send _get directions to 87_ to get directions to Sakra Hospital.
+`
+
 const app = express()
 
 app.use(bodyParser.json())
@@ -33,8 +40,8 @@ const handleInbound: RequestHandler = async (request, response) => {
   const content = request.body.message.content
   const text = content.text.toLowerCase().trim()
 
-  if (text.startsWith("search for")) {
-    let remaining = text.split("search for")[1].trim()
+  if (text.startsWith("search")) {
+    let remaining = text.split("search")[1].trim()
 
     if (remaining.includes("in")) {
       const split = remaining.split("in")
@@ -88,13 +95,14 @@ const handleInbound: RequestHandler = async (request, response) => {
     } else {
       sendWhatsappMsg(number, "Please enter a valid Hospital ID")
     }
+  } else if (text.startsWith("help") || text === "hi") {
+    sendWhatsappMsg(number, helpMessage)
   }
 
   response.status(200).end()
 }
 
 const handleStatus: RequestHandler = (request, response) => {
-  console.log(request.body)
   response.status(200).end()
 }
 
